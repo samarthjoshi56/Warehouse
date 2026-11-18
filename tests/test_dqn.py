@@ -20,3 +20,4 @@ def test_replay_buffer_samples_correct_shapes():
     batch = buffer.sample(3)
     assert batch["states"].shape == (3, 5)
     assert batch["next_masks"].shape == (3, 2)
+\n\ndef test_dqn_supports_shared_agent_interface():\n    env = WarehouseEnv(WarehouseConfig(num_stacks=3, stack_height=2, num_items=2, seed=5))\n    obs, _ = env.reset(seed=5)\n    agent = DQNAgent(flatten_observation(obs).size, env.action_space.n, seed=5)\n    action = agent.select_action(obs, obs["action_mask"], explore=False)\n    assert obs["action_mask"][action] == 1\n
