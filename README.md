@@ -11,7 +11,7 @@ A reinforcement-learning project that learns item-placement policies for a stack
 
 ## Current status
 
-- **Phase 1:** Problem definition and design documents included.
+- **Phase 1:** Core design and audit documents are part of the local project archive. The remaining Phase 1 documents are not yet synchronized to this branch.
 - **Phase 2:** Warehouse simulator, event handling, temporary storage, restoration, five heuristic baselines, and automated tests implemented.
 - **Phase 3:** Masked Double DQN, replay buffer, training loop, checkpointing, and held-out evaluation implemented. A trained checkpoint must be generated locally; no unvalidated weights are committed.
 - **Phase 4:** Interactive Gradio application is provided for baseline and optional trained-DQN demonstrations.
