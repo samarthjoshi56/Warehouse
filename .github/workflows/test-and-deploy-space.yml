@@ -1,0 +1,55 @@
+name: Test and deploy Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        run: pytest -q
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && secrets.HF_TOKEN != '' && secrets.HF_SPACE_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+      - name: Push app to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
+        run: |
+          set -euo pipefail
+          git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_ID}" hf-space
+          cp README.md app.py requirements.txt hf-space/
+          cp -R agents baselines environment evaluation training docs hf-space/
+          cd hf-space
+          git add README.md app.py requirements.txt agents baselines environment evaluation training docs
+          if git diff --cached --quiet; then
+            echo "No Hugging Face Space changes to publish."
+          else
+            git commit -m "Deploy ${GITHUB_SHA}"
+            git push
+          fi
