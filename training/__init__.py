@@ -1,1 +1,1 @@
-"""Training package. RL training infrastructure added in Phase 2."""
+"""RL training utilities and experiment entry points."""
