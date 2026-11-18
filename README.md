@@ -11,51 +11,77 @@ A reinforcement-learning project that learns item-placement policies for a stack
 
 ## Current status
 
-- **Phase 1:** Problem definition and design documents are included in the downloadable project archive.
+- **Phase 1:** Core design and audit documents are part of the local project archive. The remaining Phase 1 documents are not yet synchronized to this branch.
 - **Phase 2:** Warehouse simulator, event handling, temporary storage, restoration, five heuristic baselines, and automated tests implemented.
-- **Phase 3:** Masked Double DQN, replay buffer, training loop, checkpointing, and held-out evaluation implemented. Initial DQN results are below the heuristic baselines.
-- **Phase 4:** Gradio demo implemented. It runs the five heuristics by default. Add a trained checkpoint at `artifacts/dqn_warehouse.pt` to enable DQN inference.
+- **Phase 3:** Masked Double DQN, replay buffer, training loop, checkpointing, and held-out evaluation implemented. A trained checkpoint must be generated locally; no unvalidated weights are committed.
+- **Phase 4:** Interactive Gradio application is provided for baseline and optional trained-DQN demonstrations.
+
+## Project structure
+
+```text
+environment/     Simulator, events, item/stack models, metrics
+agents/          Agent interfaces and masked DQN
+baselines/       Random, First Fit, ERF, Min Height, Improved Greedy
+training/        Replay buffer, DQN training and evaluation
+evaluation/     Episode runner and statistical reporting
+visualization/   Warehouse visualisation helpers
+app.py           Gradio demo entry point
+docs/            Phase 1 specifications and design audits
+tests/           Automated tests
+```
 
 ## Phase documentation
 
-- `docs/PHASE_2_IMPLEMENTATION.md` — simulator implementation and validation status.\n- `docs/PHASE_2_STRESS_VALIDATION.md` — 450-episode multi-scenario stress check.
-- `docs/PHASE_3_EVALUATION.md` — initial DQN test results and limitations.\n- `docs/PHASE_4_DEPLOYMENT.md` — Hugging Face Spaces setup and CI deployment.
+- `docs/PHASE_2_IMPLEMENTATION.md` — simulator implementation and validation status.
+- `docs/PHASE_2_STRESS_VALIDATION.md` — 450-episode multi-scenario stress check.
+- `docs/PHASE_3_EVALUATION.md` — initial DQN test results and limitations.
+- `docs/PHASE_4_DEPLOYMENT.md` — Hugging Face Spaces setup and CI deployment.
 
 ## Install
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
+```
+
+## Run tests
+
+```bash
 pytest -q
 ```
 
-## Train
+## Train DQN
 
-Training seeds 0–49:
+Training uses seeds 0–49 by default, as specified in `docs/EXPERIMENTAL_DESIGN.md`.
 
 ```bash
 python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt
 ```
 
-Resume an interrupted run:
+The command writes a PyTorch checkpoint and per-episode CSV log.
 
-```bash
-python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt --resume
-```
-
-## Evaluate
-
-Held-out test seeds 200–229:
+## Evaluate on held-out test seeds
 
 ```bash
 python -m training.evaluate --checkpoint artifacts/dqn_warehouse.pt --scenario B --output artifacts/test_results.csv
 ```
 
-The evaluator writes raw per-seed results and a summary with mean, median, standard deviation, and 95% confidence intervals. See `docs/PHASE_3_EVALUATION.md` for the initial result.
+The default test set is seeds 200–229. The evaluator compares DQN with all five baselines and writes raw and statistical summary CSV files. The primary ranking metric is total reshuffles; report all metrics and confidence intervals. Do not tune on test seeds.
+
+## Scenarios
+
+- `A`: no expected retrieval-time information (POMDP setting).
+- `B`: noisy expected retrieval-time information (POMDP setting).
+- `C`: known retrieval-time information with a finite lookahead window. The window is an approximation to the complete scheduler state, not a strict Markov-state guarantee.
+
+## Hugging Face Spaces
+
+Set the Space SDK to **Gradio** and use `app.py` as the entry point. Upload a trained checkpoint to `artifacts/dqn_warehouse.pt` to enable the DQN option. Without a checkpoint, the demo runs the heuristic baselines only.
 
 ## Important limitations
 
-- This is a research simulator, not a production warehouse controller.
-- The initial DQN did not outperform the heuristic baselines.
-- Feed-forward DQN is a baseline learner for partially observable Scenarios A/B; recurrent policies may be more suitable.
-- The finite lookahead in Scenario C is not a strict Markov-state guarantee.
-- Do not make performance claims without multi-seed held-out evaluation.
+- The simulator is a research implementation, not a production warehouse control system.
+- Feed-forward DQN is a baseline learner for the partially observable A/B scenarios; recurrent policies may be more suitable.
+- Training success does not establish superiority. Use the held-out multi-seed evaluation before making performance claims.
+- The finite lookahead buffer in Scenario C does not expose the entire future scheduler queue.
