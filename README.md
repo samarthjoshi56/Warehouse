@@ -1,63 +1,56 @@
-# Smart Warehouse Storage Optimisation Agent
-
-A Reinforcement Learning system for minimising reshuffling operations in a stack-based LIFO warehouse.
-
-> **Status:** Phase 1 complete — Problem definition and system design.  
-> Phase 2 (simulator implementation) pending approval.
-
+---
+title: Smart Warehouse Storage Optimisation Agent
+sdk: gradio
+app_file: app.py
+python_version: "3.10"
 ---
 
-## Project Structure
+# Smart Warehouse Storage Optimisation Agent
 
-```
-smart-warehouse-agent/
-├── environment/        # Warehouse simulator (algorithm-agnostic)
-├── agents/             # RL agent interfaces
-├── baselines/          # Deterministic baseline algorithms
-├── training/           # RL training infrastructure (Phase 2+)
-├── evaluation/         # Experiment runner and statistical reporter
-├── visualization/      # Rendering and charts (Phase 3+)
-├── tests/              # Pytest test suite
-├── docs/               # Phase 1 documentation
-├── app.py              # Hugging Face Spaces entry point (Phase 3+)
-└── requirements.txt
-```
+A reinforcement-learning project that learns item-placement policies for a stack-based LIFO warehouse. The operational objective is to reduce reshuffling while completing scheduled retrievals.
 
-## Documentation
+## Current status
 
-| Document | Description |
-|---|---|
-| [PROBLEM_DEFINITION.md](docs/PROBLEM_DEFINITION.md) | Problem statement, scope, glossary |
-| [MATHEMATICAL_MODEL.md](docs/MATHEMATICAL_MODEL.md) | MDP formalisation, state/action/reward math |
-| [STATE_ACTION_REWARD_DESIGN.md](docs/STATE_ACTION_REWARD_DESIGN.md) | Representation comparison, action masking, reward design |
-| [WAREHOUSE_RULES.md](docs/WAREHOUSE_RULES.md) | LIFO rules, reshuffling, temp storage, invariants |
-| [BASELINE_ALGORITHMS.md](docs/BASELINE_ALGORITHMS.md) | 5 baseline algorithms with decision logic |
-| [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Unit, integration, and edge case test specs |
-| [EXPERIMENTAL_DESIGN.md](docs/EXPERIMENTAL_DESIGN.md) | Seeds, splits, metrics, statistical reporting |
-| [SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) | Module responsibilities and dependency graph |
-| [PHASE_1_REVIEW.md](docs/PHASE_1_REVIEW.md) | Decisions, assumptions, risks, next steps |
+- **Phase 1:** Problem definition and design documents are included in the downloadable project archive.
+- **Phase 2:** Warehouse simulator, event handling, temporary storage, restoration, five heuristic baselines, and automated tests implemented.
+- **Phase 3:** Masked Double DQN, replay buffer, training loop, checkpointing, and held-out evaluation implemented. Initial DQN results are below the heuristic baselines.
+- **Phase 4:** Gradio demo implemented. It runs the five heuristics by default. Add a trained checkpoint at `artifacts/dqn_warehouse.pt` to enable DQN inference.
 
-## Quick Start (Phase 2+)
+## Install
 
 ```bash
 pip install -r requirements.txt
-pytest tests/ -v
+pytest -q
 ```
 
-## Warehouse Configuration
+## Train
 
-| Parameter | Default |
-|---|---:|
-| Stacks | 10 |
-| Stack height | 5 |
-| Capacity | 50 |
-| Items per episode | 100 |
-| Temp storage slots | 10 |
+Training seeds 0–49:
 
-## Deployment
+```bash
+python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt
+```
 
-Target: [Hugging Face Spaces](https://huggingface.co/spaces) (Phase 3).
+Resume an interrupted run:
 
----
+```bash
+python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt --resume
+```
 
-*Senior RL Engineering project — Phase 1: 2026-11-18*
+## Evaluate
+
+Held-out test seeds 200–229:
+
+```bash
+python -m training.evaluate --checkpoint artifacts/dqn_warehouse.pt --scenario B --output artifacts/test_results.csv
+```
+
+The evaluator writes raw per-seed results and a summary with mean, median, standard deviation, and 95% confidence intervals. See `docs/PHASE_3_EVALUATION.md` for the initial result.
+
+## Important limitations
+
+- This is a research simulator, not a production warehouse controller.
+- The initial DQN did not outperform the heuristic baselines.
+- Feed-forward DQN is a baseline learner for partially observable Scenarios A/B; recurrent policies may be more suitable.
+- The finite lookahead in Scenario C is not a strict Markov-state guarantee.
+- Do not make performance claims without multi-seed held-out evaluation.
