@@ -12,7 +12,7 @@ def flatten_observation(observation: dict[str, np.ndarray]) -> np.ndarray:
     return np.concatenate([np.asarray(observation[k], dtype=np.float32).ravel() for k in fields])
 
 class QNetwork(nn.Module):
-    def __init__(self, input_dim: int, action_dim: int, hidden_dim: int = 64):
+    def __init__(self, input_dim: int, action_dim: int, hidden_dim: int = 256):
         super().__init__()
         self.layers = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.ReLU(),
                                     nn.Linear(hidden_dim, hidden_dim), nn.ReLU(),
@@ -24,11 +24,11 @@ class QNetwork(nn.Module):
 class DQNConfig:
     learning_rate: float = 1e-3
     gamma: float = 0.995
-    batch_size: int = 32
+    batch_size: int = 64
     replay_capacity: int = 50_000
     learning_starts: int = 500
-    train_frequency: int = 16
-    target_update_interval: int = 100
+    train_frequency: int = 1
+    target_update_interval: int = 500
     epsilon_start: float = 1.0
     epsilon_end: float = 0.05
     epsilon_decay_steps: int = 10_000
