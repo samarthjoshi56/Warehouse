@@ -53,13 +53,17 @@ class DQNAgent:
         self.steps = 0
         self.updates = 0
 
+    def reset(self) -> None:
+        """Reset episode-local state while keeping learned weights and exploration progress."""
+        return None
+
     def epsilon(self) -> float:
         c = self.config
         fraction = min(1.0, self.steps / max(1, c.epsilon_decay_steps))
         return c.epsilon_start + fraction * (c.epsilon_end - c.epsilon_start)
 
-    def select_action(self, observation: dict[str, np.ndarray], explore: bool = True) -> int:
-        mask = np.asarray(observation["action_mask"], dtype=bool)
+    def select_action(self, observation: dict[str, np.ndarray], action_mask=None, explore: bool = True) -> int:
+        mask = np.asarray(observation["action_mask"] if action_mask is None else action_mask, dtype=bool)
         valid = np.flatnonzero(mask)
         if not len(valid):
             raise ValueError("No valid action is available")
