@@ -18,6 +18,7 @@
 - Test seeds: 200–229 (30 held-out episodes).
 - Warehouse defaults: 10 stacks, height 5, temporary storage 10, 100 items.
 - Primary metric: total reshuffles per episode. Lower is better.
+- DQN configuration: hidden width 256, batch size 64, replay capacity 50,000, learning starts 500, train frequency 1, target update interval 500, learning rate 0.001, gamma 0.995, epsilon 1.0 to 0.05 over 10,000 decisions.
 - Checkpoint: `artifacts/dqn_warehouse.pt` (generated locally; excluded from Git).
 
 ## Test-set results
