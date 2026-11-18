@@ -27,7 +27,7 @@ jobs:
 
   deploy:
     needs: test
-    if: github.event_name != 'pull_request' && secrets.HF_TOKEN != '' && secrets.HF_SPACE_ID != ''
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -42,6 +42,10 @@ jobs:
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
           set -euo pipefail
+          if [ -z "${HF_TOKEN}" ] || [ -z "${HF_SPACE_ID}" ]; then
+            echo "HF_TOKEN or HF_SPACE_ID is not configured. Skipping deployment."
+            exit 0
+          fi
           git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_ID}" hf-space
           cp README.md app.py requirements.txt hf-space/
           cp -R agents baselines environment evaluation training docs hf-space/
