@@ -16,6 +16,11 @@ A reinforcement-learning project that learns item-placement policies for a stack
 - **Phase 3:** Masked Double DQN, replay buffer, training loop, checkpointing, and held-out evaluation implemented. Initial DQN results are below the heuristic baselines.
 - **Phase 4:** Gradio demo implemented. It runs the five heuristics by default. Add a trained checkpoint at `artifacts/dqn_warehouse.pt` to enable DQN inference.
 
+## Phase documentation
+
+- `docs/PHASE_2_IMPLEMENTATION.md` — simulator implementation and validation status.
+- `docs/PHASE_3_EVALUATION.md` — initial DQN test results and limitations.
+
 ## Install
 
 ```bash
