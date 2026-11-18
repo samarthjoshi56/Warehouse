@@ -1,42 +1,11 @@
-"""
-Custom exceptions for the warehouse simulator.
-
-All exceptions raised by the simulator are defined here.
-No other module should define simulator exceptions.
-"""
-
-
-class WarehouseError(Exception):
-    """Base class for all warehouse simulator exceptions."""
-
-
-class InvalidActionError(WarehouseError):
-    """Raised when the agent selects a masked (invalid) action."""
-
-
-class NoValidPlacementError(WarehouseError):
-    """Raised when no valid stack exists for the incoming item."""
-
-
-class TemporaryStorageFullError(WarehouseError):
-    """Raised when temporary storage is at capacity and cannot accept a blocker."""
-
-
-class DuplicateItemError(WarehouseError):
-    """Raised when an item with the same ID is placed in the warehouse twice."""
-
-
-class ItemNotFoundError(WarehouseError):
-    """Raised when a retrieval target does not exist in the warehouse."""
-
-
-class ItemConservationError(WarehouseError):
-    """Raised when the item conservation invariant is violated."""
-
-
-class RestoreFailure(WarehouseError):
-    """Raised when a blocker cannot be restored to any valid warehouse stack."""
-
-
-class IncompatibleDestinationError(WarehouseError):
-    """Raised when a blocker has no compatible destination during reshuffling."""
+"""Custom exceptions for the warehouse simulator."""
+class WarehouseError(Exception): """Base exception for warehouse operations."""
+class InvalidActionError(WarehouseError): """Agent selected an invalid or masked action."""
+class NoValidPlacementError(WarehouseError): """No compatible stack has free capacity."""
+class CapacityError(WarehouseError): """A storage capacity would be exceeded."""
+class TemporaryStorageFullError(CapacityError): """Temporary storage has no free slots."""
+class DuplicateItemError(WarehouseError): """An item ID was inserted more than once."""
+class ItemNotFoundError(WarehouseError): """An item cannot be found in any physical location."""
+class ItemConservationError(WarehouseError): """The item-conservation invariant was violated."""
+class RestoreFailure(WarehouseError): """A temporary item has no compatible destination."""
+class IncompatibleDestinationError(RestoreFailure): """A restore destination violates item compatibility."""
