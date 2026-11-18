@@ -35,7 +35,7 @@ All policies retrieved all 100 items in every evaluated episode.
 
 ## Interpretation
 
-The DQN policy did not outperform the heuristic baselines. Its mean reshuffle count was higher than Random, Greedy Min Height, Earliest Retrieval First, and Improved Greedy. Paired Wilcoxon tests on the 30 common test seeds found worse DQN results than Improved Greedy (p = 3.40e-6), Greedy Min Height (p = 2.34e-6), Random (p = 1.04e-4), and Earliest Retrieval First (p = 2.11e-5). These comparisons remain significant under a Bonferroni threshold of 0.0125.
+The DQN policy did not outperform the heuristic baselines. Its mean reshuffle count was higher than Random, Greedy Min Height, Earliest Retrieval First, and Improved Greedy. Paired Wilcoxon tests on the 30 common test seeds found worse DQN results than Improved Greedy (p = 3.40e-6), Greedy Min Height (p = 2.34e-6), Random (p = 1.04e-4), Earliest Retrieval First (p = 2.11e-5), and First Fit (p = 3.78e-4). All five comparisons remain significant after Bonferroni correction (adjusted p < 0.01).
 
 Do not describe this model as better than the baselines. Treat it as a working training pipeline and a weak initial policy. The heuristic baselines remain the current performance reference.
 
