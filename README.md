@@ -18,7 +18,7 @@ A reinforcement-learning project that learns item-placement policies for a stack
 
 ## Phase documentation
 
-- `docs/PHASE_2_IMPLEMENTATION.md` — simulator implementation and validation status.
+- `docs/PHASE_2_IMPLEMENTATION.md` — simulator implementation and validation status.\n- `docs/PHASE_2_STRESS_VALIDATION.md` — 450-episode multi-scenario stress check.
 - `docs/PHASE_3_EVALUATION.md` — initial DQN test results and limitations.\n- `docs/PHASE_4_DEPLOYMENT.md` — Hugging Face Spaces setup and CI deployment.
 
 ## Install
