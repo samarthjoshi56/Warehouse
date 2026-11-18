@@ -1,19 +1,15 @@
-# Phase 2: Training Infrastructure
+# RL Training
 
-This package contains RL training components.
+Train the masked Double DQN with the 50 training seeds (0–49):
 
-**Status:** Placeholder — not implemented in Phase 1.
+```bash
+python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt
+```
 
-## Planned contents
+Resume an interrupted run with `--resume`. Evaluate on held-out seeds 200–229:
 
-- `loop.py` — Training loop
-- `replay_buffer.py` — Experience replay (DQN)
-- `rollout_buffer.py` — On-policy rollout collection (PPO)
-- `checkpointer.py` — Model checkpoint management
-- `logger.py` — TensorBoard / CSV logging
+```bash
+python -m training.evaluate --checkpoint artifacts/dqn_warehouse.pt --scenario B
+```
 
-## Constraints
-
-- Imports from `environment/` and `agents/` only.
-- Never imports from `baselines/`, `evaluation/`, or `visualization/`.
-- Never modifies `WarehouseEnv` internals.
+The initial DQN did not beat the heuristic baselines. See `docs/PHASE_3_EVALUATION.md`.
