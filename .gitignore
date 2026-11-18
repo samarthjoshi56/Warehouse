@@ -9,3 +9,7 @@ env/
 .env
 .env.*
 .DS_Store
+artifacts/*.pt
+artifacts/*.pth
+artifacts/*.ckpt
+artifacts/*.csv
