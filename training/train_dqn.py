@@ -21,6 +21,7 @@ def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
     if resume and output_path.exists():
         metadata = agent.load(output_path, load_optimizer=True)
         start_episode = int(metadata.get("episodes_completed", 0))
+        dqn_cfg = agent.config
         if csv_path.exists():
             with csv_path.open(newline="") as f:
                 history = list(csv.DictReader(f))
