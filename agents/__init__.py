@@ -1,1 +1,4 @@
-"""Agents package. RL algorithm implementations added in Phase 2."""
+"""Agent interfaces and reinforcement-learning policies."""
+from .dqn import DQNAgent, DQNConfig
+
+__all__ = ["DQNAgent", "DQNConfig"]
