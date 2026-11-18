@@ -32,7 +32,7 @@ class DQNConfig:
     epsilon_start: float = 1.0
     epsilon_end: float = 0.05
     epsilon_decay_steps: int = 10_000
-    hidden_dim: int = 64
+    hidden_dim: int = 256
     gradient_clip: float = 10.0
 
 class DQNAgent:
