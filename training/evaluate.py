@@ -47,7 +47,20 @@ def evaluate(checkpoint: str, scenario: str = "B", seeds=range(200, 230), output
     summary_path=path.with_name(path.stem+"_summary.csv")
     with summary_path.open("w",newline="") as f:
         writer=csv.DictWriter(f,fieldnames=list(summary[0]));writer.writeheader();writer.writerows(summary)
-    print(json.dumps({"raw_results":str(path),"summary":str(summary_path),"seeds":seeds},indent=2))
+    paired=[]
+    dqn_by_seed={int(r["seed"]):r["reshuffles"] for r in grouped["DQN"]}
+    comparisons=[name for name in grouped if name!="DQN"]
+    for name in comparisons:
+        base_by_seed={int(r["seed"]):r["reshuffles"] for r in grouped[name]}
+        common=sorted(set(dqn_by_seed)&set(base_by_seed))
+        p_value=reporter.paired_wilcoxon([dqn_by_seed[s] for s in common],[base_by_seed[s] for s in common])
+        adjusted=min(1.0,p_value*len(comparisons)) if p_value is not None else None
+        paired.append({"comparison":"DQN vs "+name,"n":len(common),"wilcoxon_p":p_value,
+                       "bonferroni_p":adjusted,"significant_0_05":(adjusted<0.05) if adjusted is not None else None})
+    paired_path=path.with_name(path.stem+"_paired_tests.csv")
+    with paired_path.open("w",newline="") as f:
+        writer=csv.DictWriter(f,fieldnames=list(paired[0]));writer.writeheader();writer.writerows(paired)
+    print(json.dumps({"raw_results":str(path),"summary":str(summary_path),"paired_tests":str(paired_path),"seeds":seeds},indent=2))
     return rows, summary
 
 def main():
