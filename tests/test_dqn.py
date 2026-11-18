@@ -4,6 +4,7 @@ from training.replay_buffer import ReplayBuffer
 from environment.config import WarehouseConfig
 from environment.warehouse import WarehouseEnv
 
+
 def test_dqn_never_selects_masked_action():
     env = WarehouseEnv(WarehouseConfig(num_stacks=3, stack_height=2, num_items=2, seed=3))
     obs, _ = env.reset(seed=3)
@@ -13,6 +14,7 @@ def test_dqn_never_selects_masked_action():
         action = agent.select_action(obs, explore=False)
         assert obs["action_mask"][action] == 1
 
+
 def test_replay_buffer_samples_correct_shapes():
     buffer = ReplayBuffer(8, observation_dim=5, action_dim=2, seed=1)
     for i in range(4):
@@ -20,7 +22,31 @@ def test_replay_buffer_samples_correct_shapes():
     batch = buffer.sample(3)
     assert batch["states"].shape == (3, 5)
     assert batch["next_masks"].shape == (3, 2)
-\n\ndef test_dqn_supports_shared_agent_interface():\n    env = WarehouseEnv(WarehouseConfig(num_stacks=3, stack_height=2, num_items=2, seed=5))\n    obs, _ = env.reset(seed=5)\n    agent = DQNAgent(flatten_observation(obs).size, env.action_space.n, seed=5)\n    action = agent.select_action(obs, obs["action_mask"], explore=False)\n    assert obs["action_mask"][action] == 1\n
+
+
+def test_retrieval_reward_includes_reshuffle_cost_and_delay():
+    cfg = WarehouseConfig(num_stacks=1, stack_height=2, temp_capacity=1,
+                          num_items=2, arrival_interval=1, min_dwell_time=100,
+                          max_dwell_time=100, max_episode_steps=500, scenario="C")
+    env = WarehouseEnv(cfg)
+    obs, _ = env.reset(seed=7)
+    obs, _, term, trunc, _ = env.step(0)
+    assert not term and not trunc
+    obs, reward, term, trunc, info = env.step(0)
+    assert term or trunc
+    assert info["reshuffles"] == 1
+    assert info["retrieved"] == 2
+    # Reward must include +2 per retrieval and -1 for the blocker reshuffle.
+    assert reward > 0.0
+
+
+def test_dqn_supports_shared_agent_interface():
+    env = WarehouseEnv(WarehouseConfig(num_stacks=3, stack_height=2, num_items=2, seed=5))
+    obs, _ = env.reset(seed=5)
+    agent = DQNAgent(flatten_observation(obs).size, env.action_space.n, seed=5)
+    action = agent.select_action(obs, obs["action_mask"], explore=False)
+    assert obs["action_mask"][action] == 1
+
 
 def test_episode_runner_accepts_dqn_agent():
     from evaluation.runner import EpisodeRunner
