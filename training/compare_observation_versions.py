@@ -28,6 +28,10 @@ def evaluate_checkpoint(checkpoint: Path, scenario: str, observation_version: in
         rows.append({"seed":seed,"return":total_reward,**env.get_metrics()})
     return rows
 
+def environment_seed_start_for_run(train_seed: int, episodes: int) -> int:
+    """Allocate non-overlapping environment seed blocks to training runs."""
+    return int(train_seed) * int(episodes)
+
 def mean_std(values):
     return {"mean":float(np.mean(values)),"std":float(np.std(values,ddof=1)) if len(values)>1 else 0.0}
 
@@ -47,7 +51,7 @@ def main():
     for train_seed in range(a.seed_start,a.seed_start+a.train_seeds):
         # Keep each training run's episode seeds disjoint. The model/replay seed
         # and environment seed base are recorded separately for reproducibility.
-        environment_seed_start = train_seed * a.episodes
+        environment_seed_start = environment_seed_start_for_run(train_seed, a.episodes)
         run_config = {
             "scenario": a.scenario,
             "episodes": a.episodes,
