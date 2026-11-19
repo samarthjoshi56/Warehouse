@@ -51,7 +51,7 @@ def main():
         run_config = {
             "scenario": a.scenario,
             "episodes": a.episodes,
-            "model_seed": train_seed,
+            "model_seed": environment_seed_start,
             "environment_seed_start": environment_seed_start,
             "evaluation_seeds": evaluation_seeds,
         }
