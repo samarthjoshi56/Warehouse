@@ -45,11 +45,21 @@ def main():
     all_rows=[]
     evaluation_seeds=list(range(10000,10000+a.eval_seeds))
     for train_seed in range(a.seed_start,a.seed_start+a.train_seeds):
+        # Keep each training run's episode seeds disjoint. The model/replay seed
+        # and environment seed base are recorded separately for reproducibility.
+        environment_seed_start = train_seed * a.episodes
+        run_config = {
+            "scenario": a.scenario,
+            "episodes": a.episodes,
+            "model_seed": train_seed,
+            "environment_seed_start": environment_seed_start,
+            "evaluation_seeds": evaluation_seeds,
+        }
+        (out/f"seed{train_seed}_config.json").write_text(json.dumps(run_config, indent=2)+"\\n")
         for version in (1,2):
             checkpoint=out/f"v{version}_seed{train_seed}.pt"
-            train_csv=checkpoint.with_suffix(".csv")
             cmd=[sys.executable,"-m","training.train_dqn","--episodes",str(a.episodes),
-                 "--seed-start",str(train_seed),"--scenario",a.scenario,
+                 "--seed-start",str(environment_seed_start),"--scenario",a.scenario,
                  "--output",str(checkpoint),"--observation-version",str(version)]
             print("RUN:", " ".join(cmd),flush=True)
             subprocess.run(cmd,check=True)
