@@ -10,9 +10,9 @@ from training.replay_buffer import ReplayBuffer
 
 def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
           output: str = "artifacts/dqn_warehouse.pt", num_items: int = 100,
-          config: DQNConfig | None = None, resume: bool = False) -> list[dict]:
+          config: DQNConfig | None = None, resume: bool = False, observation_version: int = 1) -> list[dict]:
     dqn_cfg = config or DQNConfig()
-    env = WarehouseEnv(WarehouseConfig(num_items=num_items, scenario=scenario))
+    env = WarehouseEnv(WarehouseConfig(num_items=num_items, scenario=scenario, observation_version=observation_version))
     obs, _ = env.reset(seed=seed_start)
     obs_dim = flatten_observation(obs).size
     agent = DQNAgent(obs_dim, env.action_space.n, dqn_cfg, seed=seed_start)
@@ -73,7 +73,8 @@ def main():
     parser.add_argument("--num-items", type=int, default=100)
     parser.add_argument("--output", default="artifacts/dqn_warehouse.pt")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--observation-version", type=int, choices=[1, 2], default=1)
     args = parser.parse_args()
-    train(args.episodes, args.seed_start, args.scenario, args.output, args.num_items, resume=args.resume)
+    train(args.episodes, args.seed_start, args.scenario, args.output, args.num_items, resume=args.resume, observation_version=args.observation_version)
 if __name__ == "__main__":
     main()
