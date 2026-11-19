@@ -16,6 +16,8 @@ This is a model-based rollout policy. It does not train a neural network and it 
 
 ## Results
 
+Values are mean reshuffle counts per 30-item episode (not normalized per 100 items).
+
 | Scenario | Improved Greedy mean | Counterfactual mean | Difference |
 |---|---:|---:|---:|
 | A | 8.333 | 4.333 | -4.000 |
