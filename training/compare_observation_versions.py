@@ -7,7 +7,7 @@ from agents.dqn import DQNAgent, DQNConfig, flatten_observation
 from environment.config import WarehouseConfig
 from environment.warehouse import WarehouseEnv
 
-METRICS = ("reshuffles", "retrieved", "failed", "unplaced", "total_retrieval_delay", "return")
+METRICS = ("reshuffles", "retrieved", "failed", "unplaced", "total_retrieval_delay", "runtime_seconds", "return")
 
 def evaluate_checkpoint(checkpoint: Path, scenario: str, observation_version: int, seeds: list[int]):
     env = WarehouseEnv(WarehouseConfig(scenario=scenario, observation_version=observation_version))
