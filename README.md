@@ -103,3 +103,14 @@ pip install -r requirements-research.txt
 - Feed-forward DQN is a baseline learner for the partially observable A/B scenarios; recurrent policies may be more suitable.
 - Training success does not establish superiority. Use the held-out multi-seed evaluation before making performance claims.
 - The finite lookahead buffer in Scenario C does not expose the entire future scheduler queue.
+
+
+## Blocker-Aware research benchmark
+
+A blocker-aware heuristic is available as `baselines.BlockerAwarePlacement`. It remains research-only. Run paired-seed benchmarks with:
+
+```bash
+PYTHONPATH=. python training/evaluate_blocker_aware.py --seeds 30 --items 20
+```
+
+Results and interpretation are documented in `docs/BLOCKER_AWARE_EXPERIMENT.md`. This policy is not enabled in the Gradio demo because it has not shown robust gains across scenarios and item sizes.
