@@ -20,10 +20,10 @@ def run(agent, scenario, seed, n_items):
     return env.get_metrics()
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument('--seeds',type=int,default=3); p.add_argument('--items',type=int,default=30); args=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument('--seeds',type=int,default=3); p.add_argument('--items',type=int,default=30); p.add_argument('--rollout-depth',type=int,default=12); args=p.parse_args()
     rows=[]
     for sc in 'ABC':
-        for name,agent in [('Improved Greedy',ImprovedGreedy()),('Counterfactual',CounterfactualGreedy())]:
+        for name,agent in [('Improved Greedy',ImprovedGreedy()),('Counterfactual',CounterfactualGreedy(rollout_placements=args.rollout_depth))]:
             for seed in range(700,700+args.seeds):
                 m=run(agent,sc,seed,args.items)
                 rows.append({'scenario':sc,'policy':name,'seed':seed,'items':args.items,'reshuffles':m.get('reshuffles',0),'retrieved':m.get('retrieved',0),'failed':m.get('failed',0),'unplaced':m.get('unplaced',0),'invalid_actions':m.get('invalid_actions',0)})
