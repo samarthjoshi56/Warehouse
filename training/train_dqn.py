@@ -1,6 +1,6 @@
 """Train a masked DQN policy on reproducible warehouse episodes."""
 from __future__ import annotations
-import argparse, csv, json
+import argparse, csv, json, warnings
 from pathlib import Path
 import numpy as np
 from agents.dqn import DQNAgent, DQNConfig, flatten_observation
@@ -17,15 +17,23 @@ def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
     obs_dim = flatten_observation(obs).size
     agent = DQNAgent(obs_dim, env.action_space.n, dqn_cfg, seed=seed_start)
     output_path = Path(output); csv_path = output_path.with_suffix(".csv")
+    replay_path = output_path.with_suffix(".replay.npz")
     start_episode = 0; history = []
     if resume and output_path.exists():
         metadata = agent.load(output_path, load_optimizer=True)
         start_episode = int(metadata.get("episodes_completed", 0))
         dqn_cfg = agent.config
+        if replay_path.exists():
+            replay = ReplayBuffer(dqn_cfg.replay_capacity, obs_dim, env.action_space.n, seed_start)
+            replay.load(replay_path)
+        else:
+            warnings.warn("Replay file missing; resuming with an empty replay buffer.", RuntimeWarning)
+            replay = ReplayBuffer(dqn_cfg.replay_capacity, obs_dim, env.action_space.n, seed_start + start_episode)
         if csv_path.exists():
             with csv_path.open(newline="") as f:
                 history = list(csv.DictReader(f))
-    replay = ReplayBuffer(dqn_cfg.replay_capacity, obs_dim, env.action_space.n, seed_start + start_episode)
+    else:
+        replay = ReplayBuffer(dqn_cfg.replay_capacity, obs_dim, env.action_space.n, seed_start)
     for episode in range(start_episode, episodes):
         obs, _ = env.reset(seed=seed_start + episode)
         state = flatten_observation(obs); total_reward = 0.0; losses = []; done = False
@@ -47,12 +55,14 @@ def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
         history.append(row)
         agent.save(output, {"scenario": scenario, "episodes_completed": episode + 1,
                             "requested_episodes": episodes, "seed_start": seed_start})
+        replay.save(replay_path)
         csv_path.parent.mkdir(parents=True, exist_ok=True)
         with csv_path.open("w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=list(history[0])); writer.writeheader(); writer.writerows(history)
         print(json.dumps(row), flush=True)
     agent.save(output, {"scenario": scenario, "episodes_completed": episodes,
                         "requested_episodes": episodes, "seed_start": seed_start})
+    replay.save(replay_path)
     return history
 
 def main():
