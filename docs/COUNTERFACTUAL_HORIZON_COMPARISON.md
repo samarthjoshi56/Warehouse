@@ -41,4 +41,4 @@ The 12-placement horizon did not outperform the heuristic in this pilot. The 18-
 
 These results are inconsistent across horizons and remain too small to establish that counterfactual search is better. The 20-seed attempt timed out. The agent is not promoted to deployment.
 
-The code now supports `--rollout-depth`. Set a depth larger than the episode item count to approximate a full-episode rollout.
+The code supports `--rollout-depth`. Set a depth larger than the episode item count to approximate a full-episode rollout.
