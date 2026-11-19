@@ -23,7 +23,7 @@ class CounterfactualGreedy:
     def select_action(self, observation, action_mask, env=None):
         if env is None:
             raise ValueError("CounterfactualGreedy requires the live environment instance")
-        valid = np.flatnonzero(np.asarray(action_mask, dtype=np.int8)
+        valid = np.flatnonzero(np.asarray(action_mask, dtype=np.int8))
         if not len(valid):
             raise ValueError("No valid action available")
         if self.max_actions is not None and len(valid) > self.max_actions:
