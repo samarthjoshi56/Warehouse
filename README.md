@@ -59,7 +59,7 @@ Training uses seeds 0–49 by default, as specified in `docs/EXPERIMENTAL_DESIGN
 python -m training.train_dqn --episodes 50 --seed-start 0 --scenario B --output artifacts/dqn_warehouse.pt
 ```
 
-The command writes a PyTorch checkpoint and per-episode CSV log.
+The command writes a PyTorch checkpoint and per-episode CSV log. Observation V1 is the default. To train with the experimental V2 encoding, add `--observation-version 2`. See `docs/OBSERVATION_V2_DESIGN.md` for the encoding and controlled comparison plan.
 
 ## Evaluate on held-out test seeds
 
@@ -117,6 +117,7 @@ Results and interpretation are documented in `docs/BLOCKER_AWARE_EXPERIMENT.md`.
 
 
 - [Observation representation audit](docs/OBSERVATION_REPRESENTATION_AUDIT.md)
+- [Observation V2 design and experiment protocol](docs/OBSERVATION_V2_DESIGN.md)
 
 ### Evaluation integrity update
 
