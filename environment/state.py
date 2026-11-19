@@ -8,13 +8,20 @@ class WarehouseState:
                 "sim_time":self.env.sim_time,"reshuffles":self.env.metrics.data.reshuffles,
                 "pending_items":[x.id for x in self.env.items.values() if x.status=="pending"]}
     def to_per_slot_tensor(self):
-        env,cfg=self.env,self.env.config; x=np.zeros((cfg.num_stacks,cfg.stack_height,6),dtype=np.float32)
+        env,cfg=self.env,self.env.config
+        v2 = cfg.observation_version == 2
+        channels = 5 + cfg.num_groups if v2 else 6
+        x=np.zeros((cfg.num_stacks,cfg.stack_height,channels),dtype=np.float32)
         for k,stack in enumerate(env.stacks):
             for h,item in enumerate(stack.items):
                 x[k,h,0]=1.0
                 x[k,h,1]=-1.0 if item.expected_retrieval_time is None else np.clip(item.expected_retrieval_time/cfg.max_episode_steps,-1,1)
-                x[k,h,2]=item.priority/5.0; x[k,h,3]=stack.group/max(1,cfg.num_groups)
-                x[k,h,4]=1.0 if h==stack.height-1 else 0.0; x[k,h,5]=h/cfg.stack_height
+                x[k,h,2]=item.priority/5.0; if v2:
+                    x[k,h,3]=1.0 if h==stack.height-1 else 0.0; x[k,h,4]=h/cfg.stack_height
+                    x[k,h,5+stack.group]=1.0
+                else:
+                    x[k,h,3]=stack.group/max(1,cfg.num_groups)
+                    x[k,h,4]=1.0 if h==stack.height-1 else 0.0; x[k,h,5]=h/cfg.stack_height
         return x
     def to_compact_vector(self):
         env,cfg=self.env,self.env.config
