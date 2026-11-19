@@ -85,15 +85,30 @@ def main():
     summary_path.write_text(json.dumps({"scenario":a.scenario,"episodes_per_train_seed":a.episodes,
       "train_seeds":list(range(a.seed_start,a.seed_start+a.train_seeds)),"evaluation_seeds":evaluation_seeds,
       "summary":summary},indent=2)+"\n")
-    # Paired difference at each evaluation seed after averaging over training seeds.
-    paired=[]
+    # Pair V1 and V2 within each training seed and evaluation seed.
+    # Report evaluation uncertainty per training run, then summarize across runs.
+    paired_by_train_seed = []
+    for train_seed in range(a.seed_start, a.seed_start+a.train_seeds):
+        for metric in METRICS:
+            diffs = []
+            for eval_seed in evaluation_seeds:
+                v1 = [float(r[metric]) for r in all_rows if r["observation_version"] == 1 and r["train_seed"] == train_seed and r["seed"] == eval_seed]
+                v2 = [float(r[metric]) for r in all_rows if r["observation_version"] == 2 and r["train_seed"] == train_seed and r["seed"] == eval_seed]
+                if len(v1) != 1 or len(v2) != 1:
+                    raise ValueError(f"Missing or duplicate paired evaluation: train_seed={train_seed}, eval_seed={eval_seed}, metric={metric}")
+                diffs.append(v2[0] - v1[0])
+            rng = np.random.default_rng(2026 + train_seed)
+            boot = np.mean(rng.choice(np.asarray(diffs), size=(10000, len(diffs)), replace=True), axis=1)
+            paired_by_train_seed.append({"metric":metric,"train_seed":train_seed,
+                "mean_v2_minus_v1":float(np.mean(diffs)),"evaluation_seed_count":len(diffs),
+                "bootstrap_95_ci":[float(np.percentile(boot,2.5)),float(np.percentile(boot,97.5))]})
+    overall_paired = []
     for metric in METRICS:
-        v1={s:np.mean([float(r[metric]) for r in all_rows if r["observation_version"]==1 and r["seed"]==s]) for s in evaluation_seeds}
-        v2={s:np.mean([float(r[metric]) for r in all_rows if r["observation_version"]==2 and r["seed"]==s]) for s in evaluation_seeds}
-        diffs=[v2[s]-v1[s] for s in evaluation_seeds]
-        paired.append({"metric":metric,"v2_minus_v1_mean":float(np.mean(diffs)),
-                      "v2_minus_v1_std":float(np.std(diffs,ddof=1)) if len(diffs)>1 else 0.0,
-                      "evaluation_seed_count":len(diffs)})
-    (out/"paired_differences.json").write_text(json.dumps(paired,indent=2)+"\n")
+        effects = [r["mean_v2_minus_v1"] for r in paired_by_train_seed if r["metric"] == metric]
+        overall_paired.append({"metric":metric,"mean_train_seed_effect":float(np.mean(effects)),
+            "std_across_train_seeds":float(np.std(effects,ddof=1)) if len(effects)>1 else 0.0,
+            "train_seed_count":len(effects)})
+    (out/"paired_differences.json").write_text(json.dumps({"per_train_seed":paired_by_train_seed,
+        "overall_across_train_seeds":overall_paired},indent=2)+"\n")
     print(json.dumps({"raw_csv":str(raw),"summary":str(summary_path),"paired_differences":str(out/"paired_differences.json")},indent=2))
 if __name__=="__main__": main()
