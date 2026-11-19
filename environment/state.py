@@ -16,12 +16,15 @@ class WarehouseState:
             for h,item in enumerate(stack.items):
                 x[k,h,0]=1.0
                 x[k,h,1]=-1.0 if item.expected_retrieval_time is None else np.clip(item.expected_retrieval_time/cfg.max_episode_steps,-1,1)
-                x[k,h,2]=item.priority/5.0; if v2:
-                    x[k,h,3]=1.0 if h==stack.height-1 else 0.0; x[k,h,4]=h/cfg.stack_height
+                x[k,h,2]=item.priority/5.0
+                if v2:
+                    x[k,h,3]=1.0 if h==stack.height-1 else 0.0
+                    x[k,h,4]=h/cfg.stack_height
                     x[k,h,5+stack.group]=1.0
                 else:
                     x[k,h,3]=stack.group/max(1,cfg.num_groups)
-                    x[k,h,4]=1.0 if h==stack.height-1 else 0.0; x[k,h,5]=h/cfg.stack_height
+                    x[k,h,4]=1.0 if h==stack.height-1 else 0.0
+                    x[k,h,5]=h/cfg.stack_height
         return x
     def to_compact_vector(self):
         env,cfg=self.env,self.env.config
