@@ -44,8 +44,8 @@ class WarehouseEnv(gym.Env):
         self.stack_groups = cfg.stack_groups or tuple(k % cfg.num_groups for k in range(cfg.num_stacks))
         self.action_space = spaces.Discrete(cfg.num_stacks)
         self.observation_space = spaces.Dict({
-            "grid": spaces.Box(-1.0, 1.0, (cfg.num_stacks, cfg.stack_height, 6), np.float32),
-            "incoming_item": spaces.Box(-1.0, 1.0, (4,), np.float32),
+            "grid": spaces.Box(-1.0, 1.0, (cfg.num_stacks, cfg.stack_height, 5 + cfg.num_groups if cfg.observation_version == 2 else 6), np.float32),
+            "incoming_item": spaces.Box(-1.0, 1.0, (3 + cfg.num_groups if cfg.observation_version == 2 else 4,), np.float32),
             "temp_storage": spaces.Box(-1.0, 1.0, (3,), np.float32),
             "stack_summaries": spaces.Box(0.0, 1.0, (cfg.num_stacks, 3), np.float32),
             "schedule_lookahead": spaces.Box(-1.0, 1.0, (cfg.lookahead_window, 4), np.float32),
@@ -246,10 +246,15 @@ class WarehouseEnv(gym.Env):
         grid = self.state.to_per_slot_tensor()
         item = self.current_item
         if item is None:
-            incoming = np.zeros(4, dtype=np.float32)
+            incoming = np.zeros(3 + cfg.num_groups if cfg.observation_version == 2 else 4, dtype=np.float32)
         else:
             tau = -1.0 if item.expected_retrieval_time is None else np.clip(item.expected_retrieval_time / cfg.max_episode_steps, -1, 1)
-            incoming = np.asarray([tau, item.priority / 5.0, min(item.compatible_groups) / max(1, cfg.num_groups), 1.0], dtype=np.float32)
+            if cfg.observation_version == 2:
+                incoming = np.zeros(3 + cfg.num_groups, dtype=np.float32)
+                incoming[:3] = [tau, item.priority / 5.0, 1.0]
+                incoming[3 + np.asarray(sorted(item.compatible_groups), dtype=np.int64)] = 1.0
+            else:
+                incoming = np.asarray([tau, item.priority / 5.0, min(item.compatible_groups) / max(1, cfg.num_groups), 1.0], dtype=np.float32)
         taus = [x.expected_retrieval_time / cfg.max_episode_steps for x in self.temp_storage.items if x.expected_retrieval_time is not None]
         temp = np.asarray([self.temp_storage.count / max(1, cfg.temp_capacity), min(taus) if taus else -1.0, max(taus) if taus else -1.0], dtype=np.float32)
         summaries = np.zeros((cfg.num_stacks, 3), dtype=np.float32)
