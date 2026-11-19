@@ -18,7 +18,7 @@ A reinforcement-learning project that learns item-placement policies for a stack
 
 ## Project structure
 
-```text
+```
 environment/     Simulator, events, item/stack models, metrics
 agents/          Agent interfaces and masked DQN
 baselines/       Random, First Fit, ERF, Min Height, Improved Greedy
@@ -86,7 +86,9 @@ Counterfactual rollout experiments and learned-label baselines are documented se
 - [Counterfactual rollout pilot](docs/COUNTERFACTUAL_PLACEMENT_EXPERIMENT.md)
 - [Rollout horizon comparison](docs/COUNTERFACTUAL_HORIZON_COMPARISON.md)
 - [Counterfactual label-learning results](docs/COUNTERFACTUAL_LABEL_LEARNING.md)
+- [Counterfactual score regression experiment](docs/COUNTERFACTUAL_SCORE_REGRESSION.md)
 - [Counterfactual label collection script](training/collect_counterfactual_labels.py)
+- [Counterfactual score regression script](training/train_counterfactual_score_regression.py)
 - [Research-only dependencies](requirements-research.txt)
 
 Install research dependencies separately when needed:
