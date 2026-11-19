@@ -11,17 +11,20 @@ class CounterfactualGreedy:
     This model-based agent requires access to the live simulator and is not an
     observation-only deployment policy. The rollout horizon controls compute cost.
     """
-    def __init__(self, rollout_agent=None, max_actions=None, rollout_placements=12):
+    def __init__(self, rollout_agent=None, max_actions=None, rollout_placements=12, collect_records=False):
         if rollout_placements < 1:
             raise ValueError("rollout_placements must be at least 1")
         self.rollout_agent = rollout_agent or ImprovedGreedy()
         self.max_actions = max_actions
         self.rollout_placements = int(rollout_placements)
+        self.collect_records = bool(collect_records)
+        self.records = []
         self.evaluations = 0
         self.reset()
 
     def reset(self):
         self.evaluations = 0
+        self.records = []
         if hasattr(self.rollout_agent, "reset"):
             self.rollout_agent.reset()
 
@@ -34,6 +37,7 @@ class CounterfactualGreedy:
         if self.max_actions is not None and len(valid) > self.max_actions:
             valid = valid[:self.max_actions]
         results = []
+        scores = []
         for action in valid:
             clone = copy.deepcopy(env)
             clone_obs, _, terminated, truncated, _ = clone.step(int(action))
@@ -49,7 +53,21 @@ class CounterfactualGreedy:
                 placements += 1
             metrics = clone.get_metrics()
             self.evaluations += 1
-            results.append((float(metrics.get("reshuffles", 0)),
-                           float(metrics.get("failed", 0)),
-                           float(metrics.get("unplaced", 0)), int(action)))
-        return min(results)[-1]
+            score = (float(metrics.get("reshuffles", 0)),
+                       float(metrics.get("failed", 0)),
+                       float(metrics.get("unplaced", 0)), int(action))
+            results.append(score)
+            scores.append(score)
+        chosen = min(results)[-1]
+        if self.collect_records:
+            from agents.dqn import flatten_observation
+            score_matrix = np.full((len(action_mask), 3), np.nan, dtype=np.float32)
+            for score in scores:
+                score_matrix[int(score[3])] = np.asarray(score[:3], dtype=np.float32)
+            self.records.append({
+                "observation": flatten_observation(observation).copy(),
+                "action_mask": np.asarray(action_mask, dtype=np.int8).copy(),
+                "label": int(chosen),
+                "candidate_scores": score_matrix,
+            })
+        return chosen
