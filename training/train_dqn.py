@@ -22,6 +22,9 @@ def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
     if resume and output_path.exists():
         metadata = agent.load(output_path, load_optimizer=True)
         start_episode = int(metadata.get("episodes_completed", 0))
+        checkpoint_observation_version = int(metadata.get("observation_version", 1))
+        if checkpoint_observation_version != observation_version:
+            raise ValueError(f"Checkpoint observation version {checkpoint_observation_version} does not match requested version {observation_version}")
         dqn_cfg = agent.config
         if replay_path.exists():
             replay = ReplayBuffer(dqn_cfg.replay_capacity, obs_dim, env.action_space.n, seed_start)
@@ -54,14 +57,14 @@ def train(episodes: int = 50, seed_start: int = 0, scenario: str = "B",
                **env.get_metrics()}
         history.append(row)
         agent.save(output, {"scenario": scenario, "episodes_completed": episode + 1,
-                            "requested_episodes": episodes, "seed_start": seed_start})
+                            "requested_episodes": episodes, "seed_start": seed_start, "observation_version": observation_version})
         replay.save(replay_path)
         csv_path.parent.mkdir(parents=True, exist_ok=True)
         with csv_path.open("w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=list(history[0])); writer.writeheader(); writer.writerows(history)
         print(json.dumps(row), flush=True)
     agent.save(output, {"scenario": scenario, "episodes_completed": episodes,
-                        "requested_episodes": episodes, "seed_start": seed_start})
+                        "requested_episodes": episodes, "seed_start": seed_start, "observation_version": observation_version})
     replay.save(replay_path)
     return history
 
