@@ -1,0 +1,16 @@
+scenario,policy,mean_reshuffles,sd_reshuffles,mean_override_rate,items_retrieved,failed,unplaced,invalid_actions
+A,Improved Greedy,9.5333,3.767,0,3000,0,0,0
+A,DQN,11.8667,3.082,,3000,0,0,0
+A,Hybrid margin 0.5,10.2667,4.578,0.721,3000,0,0,0
+A,Hybrid margin 2,9.5333,3.767,0,3000,0,0,0
+A,Hybrid margin 5,9.5333,3.767,0,3000,0,0,0
+B,Improved Greedy,7.8667,3.048,0,3000,0,0,0
+B,DQN,11.5333,2.403,,3000,0,0,0
+B,Hybrid margin 0.5,10.4000,2.027,0.185,3000,0,0,0
+B,Hybrid margin 2,8.7000,3.019,0.032,3000,0,0,0
+B,Hybrid margin 5,7.8667,3.048,0,3000,0,0,0
+C,Improved Greedy,6.1000,3.155,0,3000,0,0,0
+C,DQN,11.7000,2.588,,3000,0,0,0
+C,Hybrid margin 0.5,9.8667,2.177,0.187,3000,0,0,0
+C,Hybrid margin 2,7.0333,2.773,0.034,3000,0,0,0
+C,Hybrid margin 5,6.1000,3.155,0,3000,0,0,0
