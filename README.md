@@ -79,6 +79,22 @@ The default test set is seeds 200–229. The evaluator compares DQN with all fiv
 
 Set the Space SDK to **Gradio** and use `app.py` as the entry point. Upload a trained checkpoint to `artifacts/dqn_warehouse.pt` to enable the DQN option. Without a checkpoint, the demo runs the heuristic baselines only.
 
+## Experimental research extensions
+
+Counterfactual rollout experiments and learned-label baselines are documented separately. These are research-only and are not enabled in the demo.
+
+- [Counterfactual rollout pilot](docs/COUNTERFACTUAL_PLACEMENT_EXPERIMENT.md)
+- [Rollout horizon comparison](docs/COUNTERFACTUAL_HORIZON_COMPARISON.md)
+- [Counterfactual label-learning results](docs/COUNTERFACTUAL_LABEL_LEARNING.md)
+- [Counterfactual label collection script](training/collect_counterfactual_labels.py)
+- [Research-only dependencies](requirements-research.txt)
+
+Install research dependencies separately when needed:
+
+```bash
+pip install -r requirements-research.txt
+```
+
 ## Important limitations
 
 - The simulator is a research implementation, not a production warehouse control system.
