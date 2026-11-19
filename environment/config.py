@@ -27,7 +27,9 @@ class WarehouseConfig:
     success_reward:float=2.0
     lookahead_window:int=20
     stack_groups:tuple[int,...]=field(default_factory=tuple)
+    observation_version:int=1
     def __post_init__(self):
+        if self.observation_version not in {1,2}: raise ValueError("observation_version must be 1 or 2")
         if self.num_stacks<1 or self.stack_height<1: raise ValueError("num_stacks and stack_height must be positive")
         if self.temp_capacity<0 or self.num_items<1: raise ValueError("temp_capacity must be non-negative and num_items positive")
         if self.max_episode_steps<1 or self.num_groups<1: raise ValueError("max_episode_steps and num_groups must be positive")
