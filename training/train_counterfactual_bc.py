@@ -5,7 +5,6 @@ import numpy as np,torch
 from torch import nn
 from agents.dqn import QNetwork
 from training.episode_split import episode_holdout_mask
-from training.episode_split import episode_holdout_mask
 def train(data_path,output,epochs=50,seed=0,hidden=128,holdout_seeds=2):
  d=np.load(data_path);X=d['states'].astype(np.float32);masks=d['action_masks'].astype(bool);y=d['labels'].astype(np.int64);test=episode_holdout_mask(d['scenario_ids'],d['seeds'],holdout_seeds);tr=np.flatnonzero(~test);va=np.flatnonzero(test);rng=np.random.default_rng(seed);torch.manual_seed(seed);model=QNetwork(X.shape[1],masks.shape[1],hidden).cpu();opt=torch.optim.Adam(model.parameters(),lr=1e-3);x=torch.tensor(X);yt=torch.tensor(y);m=torch.tensor(masks);hist=[]
  for ep in range(epochs):
