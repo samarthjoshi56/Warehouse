@@ -21,7 +21,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Use CPU-only PyTorch on CI. The default PyPI wheel pulls large CUDA packages.
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
       - name: Run tests
@@ -40,24 +39,45 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-      - name: Push app to Hugging Face Space
+      - name: Deployment preflight
+        id: preflight
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
           set -euo pipefail
           if [ -z "${HF_TOKEN}" ] || [ -z "${HF_SPACE_ID}" ]; then
-            echo "HF_TOKEN or HF_SPACE_ID is not configured. Skipping deployment."
-            exit 0
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Deployment not performed: configure HF_TOKEN and HF_SPACE_ID repository secrets."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Hugging Face deployment credentials are configured."
           fi
+      - name: Push app to Hugging Face Space
+        if: steps.preflight.outputs.ready == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
+        run: |
+          set -euo pipefail
           git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_ID}" hf-space
           cp README.md app.py requirements.txt hf-space/
           cp -R agents baselines environment evaluation training docs hf-space/
+          if [ -f artifacts/dqn_warehouse.pt ]; then
+            mkdir -p hf-space/artifacts
+            cp artifacts/dqn_warehouse.pt hf-space/artifacts/
+            echo "Deploying with trained DQN checkpoint."
+          else
+            echo "WARNING: DQN checkpoint is absent from this GitHub checkout; Space will show heuristic policies only."
+          fi
           cd hf-space
-          git add README.md app.py requirements.txt agents baselines environment evaluation training docs
+          git add -A
           if git diff --cached --quiet; then
             echo "No Hugging Face Space changes to publish."
           else
             git commit -m "Deploy ${GITHUB_SHA}"
             git push
           fi
+      - name: Deployment skipped because secrets are missing
+        if: steps.preflight.outputs.ready != 'true'
+        run: echo "Deployment is skipped. The test job passed, but the Hugging Face Space was not updated."
