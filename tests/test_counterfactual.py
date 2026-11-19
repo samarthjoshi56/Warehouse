@@ -1,3 +1,4 @@
+import numpy as np
 from environment.config import WarehouseConfig
 from environment.warehouse import WarehouseEnv
 from agents.counterfactual import CounterfactualGreedy
@@ -29,3 +30,18 @@ def test_counterfactual_agent_requires_environment():
         assert 'live environment' in str(exc)
     else:
         raise AssertionError('Expected live environment requirement')
+
+
+def test_counterfactual_collects_action_labels():
+    env=WarehouseEnv(WarehouseConfig(num_items=5,scenario='A'))
+    obs,_=env.reset(seed=22)
+    agent=CounterfactualGreedy(rollout_placements=5,collect_records=True)
+    mask=obs['action_mask']
+    action=agent.select_action(obs,mask,env=env)
+    assert mask[action] == 1
+    assert len(agent.records) == 1
+    record=agent.records[0]
+    assert record['observation'].ndim == 1
+    assert record['action_mask'].shape == mask.shape
+    assert record['candidate_scores'].shape == (env.action_space.n,3)
+    assert np.isfinite(record['candidate_scores'][action]).all()
