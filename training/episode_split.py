@@ -1,25 +1,11 @@
-"""Episode-level train/test split utilities for warehouse datasets."""
-from __future__ import annotations
 import numpy as np
-
-
-def episode_holdout_mask(scenario_ids, seeds, holdout_per_scenario=2):
-    """Hold out the same number of distinct seeds independently per scenario.
-
-    Returns a boolean test mask. Episodes are identified by (scenario, seed), so
-    decisions from one episode cannot appear on both sides of the split.
-    """
-    scenario_ids=np.asarray(scenario_ids)
-    seeds=np.asarray(seeds)
-    if scenario_ids.shape != seeds.shape:
-        raise ValueError("scenario_ids and seeds must have the same shape")
-    if holdout_per_scenario < 1:
-        raise ValueError("holdout_per_scenario must be >= 1")
-    test=np.zeros(len(seeds),dtype=bool)
-    for scenario in np.unique(scenario_ids):
-        episode_seeds=np.unique(seeds[scenario_ids==scenario])
-        if len(episode_seeds) <= holdout_per_scenario:
-            raise ValueError(f"scenario {scenario} has too few episodes for holdout")
-        holdout=set(episode_seeds[-holdout_per_scenario:].tolist())
-        test |= (scenario_ids==scenario) & np.isin(seeds,list(holdout))
-    return test
+def episode_holdout_mask(scenarios,seeds,n_holdout=2):
+ scenarios=np.asarray(scenarios);seeds=np.asarray(seeds)
+ if scenarios.shape!=seeds.shape:raise ValueError("scenario and seed arrays must match")
+ if n_holdout<1:raise ValueError("n_holdout must be positive")
+ test=np.zeros(len(seeds),dtype=bool)
+ for sc in np.unique(scenarios):
+  unique=np.unique(seeds[scenarios==sc])
+  if len(unique)<=n_holdout:raise ValueError(f"not enough episodes for scenario {sc}")
+  test|=(scenarios==sc)&np.isin(seeds,unique[-n_holdout:])
+ return test
