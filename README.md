@@ -114,3 +114,8 @@ PYTHONPATH=. python training/evaluate_blocker_aware.py --seeds 30 --items 20
 ```
 
 Results and interpretation are documented in `docs/BLOCKER_AWARE_EXPERIMENT.md`. This policy is not enabled in the Gradio demo because it has not shown robust gains across scenarios and item sizes.
+
+
+### Evaluation integrity update
+
+Counterfactual model validation now uses scenario-stratified episode-level holdout. Earlier decision-level validation metrics may be optimistic and should be treated as exploratory. See `docs/EPISODE_LEVEL_EVALUATION_AUDIT.md`.
