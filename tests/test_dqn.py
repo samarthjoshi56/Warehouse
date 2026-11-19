@@ -59,3 +59,43 @@ def test_episode_runner_accepts_dqn_agent():
     result = runner.run(agent, [11])
     assert len(result) == 1
     assert result[0]["seed"] == 11
+
+
+def test_observation_v2_shapes_and_full_compatibility_vector():
+    cfg = WarehouseConfig(num_stacks=4, stack_height=3, num_groups=3,
+                         stack_groups=(0, 1, 2, 0), num_items=6,
+                         observation_version=2, seed=12)
+    env = WarehouseEnv(cfg)
+    obs, _ = env.reset(seed=12)
+    assert obs["grid"].shape == (4, 3, 8)
+    assert obs["incoming_item"].shape == (6,)
+    assert obs["action_mask"].shape == (4,)
+    item = env.current_item
+    if item is not None:
+        np.testing.assert_array_equal(obs["incoming_item"][3:], 
+                                   [float(g in item.compatible_groups) for g in range(3)])
+        assert obs["incoming_item"][2] == 1.0
+
+
+def test_observation_v2_stack_group_is_one_hot():
+    cfg = WarehouseConfig(num_stacks=3, stack_height=2, num_groups=3,
+                         stack_groups=(0, 1, 2), num_items=4,
+                         observation_version=2, seed=8)
+    env = WarehouseEnv(cfg)
+    obs, _ = env.reset(seed=8)
+    # Place one item in stack 1 and inspect the occupied slot.
+    if obs["action_mask"][1]:
+        obs, _, _, _, _ = env.step(1)
+        occupied = obs["grid"][1, 0]
+        assert occupied[0] == 1.0
+        assert occupied[5:8].sum() == 1.0
+        assert occupied[6] == 1.0
+
+
+def test_observation_v1_remains_default_and_compatible():
+    cfg = WarehouseConfig(num_stacks=3, stack_height=2, num_items=3, seed=2)
+    env = WarehouseEnv(cfg)
+    obs, _ = env.reset(seed=2)
+    assert cfg.observation_version == 1
+    assert obs["grid"].shape == (3, 2, 6)
+    assert obs["incoming_item"].shape == (4,)
