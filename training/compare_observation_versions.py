@@ -32,6 +32,15 @@ def environment_seed_start_for_run(train_seed: int, episodes: int) -> int:
     """Allocate non-overlapping environment seed blocks to training runs."""
     return int(train_seed) * int(episodes)
 
+def paired_bootstrap_ci(diffs, seed: int, samples: int = 10000):
+    """Bootstrap a paired mean difference across evaluation seeds."""
+    values = np.asarray(diffs, dtype=float)
+    if values.size == 0:
+        raise ValueError("diffs must not be empty")
+    rng = np.random.default_rng(seed)
+    boot = np.mean(rng.choice(values, size=(samples, values.size), replace=True), axis=1)
+    return [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))]
+
 def mean_std(values):
     return {"mean":float(np.mean(values)),"std":float(np.std(values,ddof=1)) if len(values)>1 else 0.0}
 
@@ -97,11 +106,9 @@ def main():
                 if len(v1) != 1 or len(v2) != 1:
                     raise ValueError(f"Missing or duplicate paired evaluation: train_seed={train_seed}, eval_seed={eval_seed}, metric={metric}")
                 diffs.append(v2[0] - v1[0])
-            rng = np.random.default_rng(2026 + train_seed)
-            boot = np.mean(rng.choice(np.asarray(diffs), size=(10000, len(diffs)), replace=True), axis=1)
             paired_by_train_seed.append({"metric":metric,"train_seed":train_seed,
                 "mean_v2_minus_v1":float(np.mean(diffs)),"evaluation_seed_count":len(diffs),
-                "bootstrap_95_ci":[float(np.percentile(boot,2.5)),float(np.percentile(boot,97.5))]})
+                "bootstrap_95_ci":paired_bootstrap_ci(diffs, seed=2026 + train_seed)})
     overall_paired = []
     for metric in METRICS:
         effects = [r["mean_v2_minus_v1"] for r in paired_by_train_seed if r["metric"] == metric]
