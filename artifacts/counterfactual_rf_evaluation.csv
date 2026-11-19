@@ -1,0 +1,25 @@
+scenario,policy,seed,items,reshuffles,retrieved,failed,unplaced,invalid_actions
+A,Improved Greedy,910,20,5,20,0,0,0
+A,Improved Greedy,911,20,5,20,0,0,0
+A,Improved Greedy,912,20,5,20,0,0,0
+A,Improved Greedy,913,20,5,20,0,0,0
+A,Counterfactual RF,910,20,10,20,0,0,0
+A,Counterfactual RF,911,20,11,20,0,0,0
+A,Counterfactual RF,912,20,5,20,0,0,0
+A,Counterfactual RF,913,20,9,20,0,0,0
+B,Improved Greedy,910,20,4,20,0,0,0
+B,Improved Greedy,911,20,6,20,0,0,0
+B,Improved Greedy,912,20,5,20,0,0,0
+B,Improved Greedy,913,20,1,20,0,0,0
+B,Counterfactual RF,910,20,6,20,0,0,0
+B,Counterfactual RF,911,20,7,20,0,0,0
+B,Counterfactual RF,912,20,8,20,0,0,0
+B,Counterfactual RF,913,20,8,20,0,0,0
+C,Improved Greedy,910,20,2,20,0,0,0
+C,Improved Greedy,911,20,4,20,0,0,0
+C,Improved Greedy,912,20,5,20,0,0,0
+C,Improved Greedy,913,20,3,20,0,0,0
+C,Counterfactual RF,910,20,8,20,0,0,0
+C,Counterfactual RF,911,20,7,20,0,0,0
+C,Counterfactual RF,912,20,7,20,0,0,0
+C,Counterfactual RF,913,20,6,20,0,0,0
