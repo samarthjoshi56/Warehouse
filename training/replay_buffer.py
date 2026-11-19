@@ -1,5 +1,7 @@
 """Bounded replay buffer for masked discrete-action transitions."""
 from __future__ import annotations
+import json
+from pathlib import Path
 import numpy as np
 
 class ReplayBuffer:
@@ -29,6 +31,31 @@ class ReplayBuffer:
         idx = self.rng.choice(self.size, size=batch_size, replace=False)
         return {"states": self.states[idx], "actions": self.actions[idx], "rewards": self.rewards[idx],
                 "next_states": self.next_states[idx], "dones": self.dones[idx], "next_masks": self.next_masks[idx]}
+
+    def save(self, path: str | Path) -> None:
+        """Persist buffer contents and sampling RNG for deterministic resume."""
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez(path, capacity=np.asarray(self.capacity), position=np.asarray(self.position),
+                 size=np.asarray(self.size), states=self.states, next_states=self.next_states,
+                 actions=self.actions, rewards=self.rewards, dones=self.dones, next_masks=self.next_masks,
+                 rng_state=np.asarray(json.dumps(self.rng.bit_generator.state)))
+
+    def load(self, path: str | Path) -> None:
+        """Restore buffer data. Reject files with incompatible dimensions or capacity."""
+        with np.load(path, allow_pickle=False) as data:
+            if int(data["capacity"]) != self.capacity:
+                raise ValueError("Replay capacity mismatch")
+            for name in ("states", "next_states", "actions", "rewards", "dones", "next_masks"):
+                target = getattr(self, name)
+                source = data[name]
+                if target.shape != source.shape:
+                    raise ValueError(f"Replay shape mismatch for {name}: {source.shape} != {target.shape}")
+                target[...] = source
+            self.position = int(data["position"]); self.size = int(data["size"])
+            if not (0 <= self.position < self.capacity and 0 <= self.size <= self.capacity):
+                raise ValueError("Invalid replay metadata")
+            self.rng.bit_generator.state = json.loads(str(data["rng_state"]))
 
     def __len__(self):
         return self.size
