@@ -1,0 +1,19 @@
+scenario,policy,seed,items,retrieved,failed,unplaced,invalid_actions,reshuffles
+A,Random,123,40,40,0,0,0,10
+A,First Fit,123,40,40,0,0,0,14
+A,Greedy (Min Height),123,40,40,0,0,0,7
+A,Earliest Retrieval First,123,40,40,0,0,0,14
+A,Improved Greedy,123,40,40,0,0,0,7
+A,Trained DQN,123,40,40,0,0,0,11
+B,Random,123,40,40,0,0,0,8
+B,First Fit,123,40,40,0,0,0,13
+B,Greedy (Min Height),123,40,40,0,0,0,7
+B,Earliest Retrieval First,123,40,40,0,0,0,6
+B,Improved Greedy,123,40,40,0,0,0,6
+B,Trained DQN,123,40,40,0,0,0,9
+C,Random,123,40,40,0,0,0,9
+C,First Fit,123,40,40,0,0,0,13
+C,Greedy (Min Height),123,40,40,0,0,0,7
+C,Earliest Retrieval First,123,40,40,0,0,0,7
+C,Improved Greedy,123,40,40,0,0,0,2
+C,Trained DQN,123,40,40,0,0,0,14
