@@ -68,7 +68,7 @@ def main():
             "environment_seed_start": environment_seed_start,
             "evaluation_seeds": evaluation_seeds,
         }
-        (out/f"seed{train_seed}_config.json").write_text(json.dumps(run_config, indent=2)+"\\n")
+        (out/f"seed{train_seed}_config.json").write_text(json.dumps(run_config, indent=2)+"\n")
         for version in (1,2):
             checkpoint=out/f"v{version}_seed{train_seed}.pt"
             cmd=[sys.executable,"-m","training.train_dqn","--episodes",str(a.episodes),
